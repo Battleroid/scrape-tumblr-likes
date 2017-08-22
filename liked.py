@@ -23,10 +23,14 @@ def fetch_post(post, path):
                 print('* skipping {}'.format(filename))
 
 
-def main(path):
+def main(path, end=None):
     total_liked = int(client.likes()[unicode('liked_count', 'utf-8')])
     for offset in range(0, total_liked, 50):
-        print('> Page {}/{}'.format((offset / 50) + 1, int(total_liked / 50)))
+        page = (offset / 50) + 1
+        if end and page >= end:
+            print('> Reached stop page, quitting')
+            sys.exit(0)
+        print('> Page {}/{}'.format(page, total_liked / 50))
         posts = client.likes(offset=offset, limit=50)['liked_posts']
         for post in posts:
             fetch_post(post, path)
@@ -34,7 +38,8 @@ def main(path):
 
 if __name__ == '__main__':
     path = sys.argv[1] if len(sys.argv) > 0 else './'
+    end = int(sys.argv[2]) if len(sys.argv) > 1 else None
     print('> Output: {}'.format(path))
     if not os.path.exists(path):
         os.mkdir(path)
-    main(path)
+    main(path, end)
